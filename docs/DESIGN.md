@@ -142,6 +142,29 @@ Recommendation: a **single Cloudflare Worker** (`/api/preview?url=`) that return
 opens — one tiny service can host link previews, short links, and (later)
 affiliate rewriting together. Cache responses (by URL) to stay within limits.
 
+#### Scope: one generic feature, Amazon as the hard first adapter
+
+Build the preview as a **site-agnostic** pipeline, not Amazon-only — being
+generic is nearly free (the same `og:image`/`twitter:image`/`<img>` extraction
+works for most of the web, exactly how Reddit/Slack/Discord unfurl links). So
+this is **one feature push**, not a per-site effort.
+
+The reframe: **Amazon is the *hard* case, not the representative easy one.** The
+generic OG path is the easy 80%; Amazon adds real cost on top:
+
+- **anti-bot** — Amazon blocks datacenter IPs (503 / CAPTCHA), so a naive Worker
+  fetch may get a robot page, not the listing;
+- **gallery extraction** — images live in a JS `data-a-dynamic-image` blob, not
+  a clean `og:image`;
+- **ASIN + affiliate canonicalization** — clean-URL + tag-at-click logic that
+  generic sites don't have.
+
+So structure it as a **generic scraper + a thin per-site adapter seam**: the
+default adapter does OG/`<img>` extraction (covers most sites for free), and
+**Amazon is the first named adapter** (gallery JSON, anti-bot handling, ASIN).
+Prioritize Amazon as the *correctness test case*, but budget the effort for the
+Amazon adapter — generality is cheap; Amazon is the tax.
+
 **Display vs. scrape — a key distinction:** showing a remote image via
 `<img src="…">` works cross-origin with no CORS. Only *reading* a page or image
 pixels needs CORS. So once we have an `iconUrl`, every client (including someone
@@ -268,9 +291,11 @@ When pretty short links (`/build/darrells-edc`) and accounts are wanted:
 - **Item catalog browser** — manage items independent of placement.
 - **Item catalog dedupe on import** — imports currently insert fresh item
   copies every time; dedupe by identity (name+brand) later.
-- **URL item import** — build the Reddit-style link-preview flow: a Cloudflare
-  Worker `/api/preview?url=` returning `{ title, images[] }`, Amazon first. See
-  "Adding items". Shares the serverless door with short links + affiliate.
+- **URL item import** — build the Reddit-style link-preview flow as one generic
+  feature: a Cloudflare Worker `/api/preview?url=` returning `{ title, images[] }`,
+  site-agnostic with a per-site adapter seam; Amazon is the first (hardest)
+  adapter. See "Adding items". Shares the serverless door with short links +
+  affiliate.
 - **Affiliate rewriting** — append the app-level affiliate tag to outbound
   `sourceUrl` clicks at click time (clean URLs stored). Compliance pass before
   monetizing. See "Click-through & affiliate links".
