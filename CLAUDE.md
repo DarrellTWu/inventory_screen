@@ -45,6 +45,11 @@ Nothing is built yet beyond a placeholder `App.tsx`. Suggested pieces:
 - `ItemCell` — one 28px cell (emoji/icon, quantity badge, selectable, draggable).
 - `CreateContainerDialog` — the double-click-a-dot flow (kind, name, capacity).
 - `ItemDetail` — selected-item panel with the external link-out.
+- `AddItemDialog` — two modes: manual (emoji + name + details) or from a store
+  URL (Amazon first) that scrapes a product image. Icon is user-editable, with
+  emoji always kept as a fallback. See DESIGN.md "Adding items" — and note the
+  scrape needs a metadata API or tiny Worker (CORS blocks client-side fetch),
+  and share codes carry image *URLs*, never image *bytes*.
 
 ## The one unimplemented core action
 

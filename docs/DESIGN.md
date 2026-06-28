@@ -91,10 +91,86 @@ Selecting a cell surfaces the item's detail (name, brand, weight, notes, and a
 link out to the source listing). Icon resolution priority:
 
 1. `iconUrl` — uploaded image or scraped product image.
-2. Open Graph image scraped from `sourceUrl` on paste.
-3. `emoji` fallback.
+2. `emoji` — always kept as a durable fallback (see "Adding items").
 
 The wireframe uses emoji throughout as the fallback tier.
+
+## Adding items
+
+Two ways to add an item. The user picks the mode in the "add item" flow.
+
+### 1. Manual
+
+The user enters the item by hand:
+
+- **name** (required)
+- **emoji** icon, chosen from a picker (required — this is the visual)
+- **brand**, **weight**, **description/notes** (optional)
+
+No network involved. This is the baseline path and always works offline.
+
+### 2. From a URL (store listing)
+
+The user pastes a product URL — **Amazon listings supported first** — and we
+make a best effort to pull the product image to use as the icon, plus a
+suggested name. The user can then edit anything, including swapping the scraped
+image for a different image URL or an emoji.
+
+- We resolve the listing's image (Open Graph `og:image`, or the listing's main
+  product image) and store it as `iconUrl`. `sourceUrl` keeps the listing link.
+- Always auto-assign a fallback `emoji` too (e.g. a category default), so the
+  item still renders if the image ever fails to load.
+- The icon is **user-editable**: replace with another image URL, upload, or fall
+  back to emoji.
+
+#### The hard part: scraping is a network call we don't control
+
+This is the first feature that wants data from an origin we don't own, and it
+bumps against the "static app, no backend" decision. A purely client-side fetch
+of an Amazon page is **blocked by CORS** — the browser can't read the page's
+HTML to find the image. So resolving the image requires one of:
+
+| Approach | Self-hosting? | Notes |
+| --- | --- | --- |
+| **Paste image URL manually** | none | User copies the image address themselves. Zero infra, worst UX, always works. |
+| **Third-party metadata API** (Microlink, Iframely, LinkPreview…) | none | Works from a static app. Free tiers + rate limits. Sends the user's URL to a third party (privacy). Amazon coverage varies. |
+| **Own serverless function** (Cloudflare Worker / Vercel fn) | tiny | One endpoint that fetches + parses `og:image`. Best UX + control, but it's a (minimal) backend. |
+| **Amazon Product Advertising API** | account | Most reliable for Amazon, but needs an affiliate account + signing. Heavy for v1. |
+
+Recommended staging: ship **manual + paste-image-URL** with no infra, and add a
+**metadata API** (or a one-function Worker) as an enhancement when wanted. Note:
+this is the same "tiny serverless function" door the sharing backend opens — if
+we stand one up for short links, it can host the scrape endpoint too.
+
+**Display vs. scrape — a key distinction:** showing a remote image via
+`<img src="…">` works cross-origin with no CORS. Only *reading* a page or image
+pixels needs CORS. So once we have an `iconUrl`, every client (including someone
+who imported a shared build) can display it; the CORS problem is confined to the
+one-time scrape at import.
+
+### Implications for the save / share system
+
+The big one: **a self-contained share link can carry an image *reference*, never
+image *bytes*.**
+
+- **Never embed image data in a share code.** A base64 data-URL for a single
+  product image is 20–100KB+; one of those blows past URL limits. Share codes
+  stay reference-only.
+- **Lite shares (default) drop `iconUrl`** and fall back to emoji — already the
+  behavior. So URL-imported items show as their fallback emoji to recipients of
+  a lite share. This is why every item keeps an emoji.
+- **Full shares include `iconUrl`** (a short remote URL string). Recipients
+  display it via `<img>` cross-origin — fine. Caveat: remote URLs **rot**
+  (Amazon changes/removes images), so a shared build's images aren't guaranteed
+  forever; the emoji fallback is the durable layer.
+- **localStorage caching is optional and local-only.** If we cache the actual
+  image bytes (data URL) for offline/robustness, keep it in localStorage **and
+  out of the share payload**, and mind the ~5MB localStorage quota — dozens of
+  cached images add up. Default to storing the URL, not the bytes.
+- **Data model already supports this** — `Item` has `emoji`, `iconUrl`, and
+  `sourceUrl`. No new fields strictly required; we may add a small
+  `iconType`/preference flag so a user who *chose* emoji over a scraped image
+  isn't overridden by icon-resolution priority.
 
 ## Visual language
 
@@ -162,6 +238,9 @@ When pretty short links (`/build/darrells-edc`) and accounts are wanted:
 - **Item catalog browser** — manage items independent of placement.
 - **Item catalog dedupe on import** — imports currently insert fresh item
   copies every time; dedupe by identity (name+brand) later.
+- **URL item import** — decide the scrape mechanism (manual paste → metadata
+  API → own Worker); Amazon first. See "Adding items". Pick this when the add-
+  item UI is built; it shares the serverless-function door with short links.
 - **Dot ↔ paperdoll alignment** — dot positions are hand-placed and slightly
   off the silhouette in the wireframe; needs tuning when ported to React with
   normalized (0..1) zone coordinates.
