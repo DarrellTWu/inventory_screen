@@ -1,41 +1,47 @@
 /* EDC Inventory — global styles & design tokens
- * The canonical visual reference is docs/wireframe.html. These tokens are
- * lifted from it so React components can share the same palette.
+ *
+ * Visual direction: a tactical military-HUD look inspired by PUBG's inventory
+ * screen (color, type, framing only — not its actual layout). Warm near-black
+ * surfaces, sand/khaki chrome text, a single hot-orange accent for
+ * selection/equip, condensed display type, and near-sharp corners. The old
+ * cool-indigo "terminal" palette is retired; these tokens are the contract —
+ * keep hardcoded hexes out of the .tsx files.
  */
 
 :root {
-  /* surfaces */
-  --bg: #0b0b0f;
-  --panel: #121218;
-  --panel-head: #17171e;
-  --cell: #0c0c12;
-  --cell-hover: #151528;
+  /* surfaces — warm, desaturated, low-key */
+  --bg: #0c0b08;
+  --panel: #16150f;
+  --panel-head: #1f1d14;
+  --cell: #100f0a;
+  --cell-hover: #201d13;
 
   /* borders */
-  --border: #22222e;
-  --border-cell: #1c1c28;
-  --border-active: #5050aa;
-  --border-sel: #5050cc;
+  --border: #2d2a1f;
+  --border-cell: #25221a;
+  --border-active: #6f6340; /* sand hover ring */
+  --border-sel: #e8983a; /* hot-orange selection */
 
-  /* text */
-  --text: #9090b0;
-  --text-dim: #5a5a7a;
-  --text-faint: #353550;
-  --text-bright: #b0b0d0;
+  /* text — warm grays up to a sand near-white */
+  --text: #918b7a;
+  --text-dim: #6c6657;
+  --text-faint: #484433;
+  --text-bright: #d9d0b4;
 
   /* accents */
-  --accent: #5050cc;
-  --good: #4a8a4a;
-  --good-bg: #141e14;
-  --good-border: #253525;
-  --full: #7a3535;
+  --accent: #e8983a; /* PUBG loot/equip orange */
+  --accent-soft: rgba(232, 152, 58, 0.16);
+  --good: #9aa356; /* muted olive — "online" / success */
+  --good-bg: #181a0e;
+  --good-border: #34381e;
+  --full: #c0492f; /* danger red-orange — at capacity */
 
-  /* sizing */
-  --cell-size: 28px;
-  --radius: 3px;
+  /* sizing — cells doubled from 28→56 for the larger-icon pass */
+  --cell-size: 56px;
+  --radius: 1px;
 
-  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'JetBrains Mono', Menlo,
-    Consolas, monospace;
+  --font-display: 'Oswald', 'Barlow Condensed', system-ui, sans-serif;
+  --font-body: 'Barlow', system-ui, 'Segoe UI', sans-serif;
 }
 
 * {
@@ -52,8 +58,16 @@ body,
 
 body {
   background: var(--bg);
+  /* faint warm wash so the field never reads as flat black, echoing the
+   * sunlit-dust backdrop behind PUBG's panels. */
+  background-image: radial-gradient(
+    120% 90% at 50% -10%,
+    rgba(86, 72, 38, 0.22),
+    transparent 60%
+  );
+  background-attachment: fixed;
   color: var(--text);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -62,36 +76,43 @@ a {
 }
 
 /* ------------------------------------------------------------------ *
- * Component classes, lifted from docs/wireframe.html and rewired to
- * the tokens above. Components reference these classes — keep new
+ * Component classes. Components reference these classes — keep new
  * hardcoded hexes out of the .tsx files.
  * ------------------------------------------------------------------ */
 
 /* Shell */
 .inv {
-  max-width: 920px;
+  max-width: 1040px;
   margin: 0 auto;
-  background: var(--bg);
-  border: 1px solid #1a1a22;
-  border-radius: 10px;
-  padding: 10px;
+  background: linear-gradient(180deg, rgba(22, 21, 15, 0.6), rgba(12, 11, 8, 0.6));
+  border: 1px solid #23211a;
+  border-radius: 2px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
+
+/* Top status bar — uppercase condensed display type with a hairline rule,
+ * sized like a HUD header. */
 .topbar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 6px 8px;
-  border-bottom: 1px solid #1a1a22;
+  gap: 10px;
+  padding: 4px 6px 10px;
+  border-bottom: 1px solid #2a2820;
   color: var(--text-dim);
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 .topbar em {
-  color: var(--text);
+  color: var(--text-bright);
   font-style: normal;
+  font-weight: 600;
+  font-size: 15px;
 }
 .topbar .spacer {
   margin-left: auto;
@@ -100,31 +121,37 @@ a {
   background: var(--good-bg);
   border: 1px solid var(--good-border);
   color: var(--good);
-  font-size: 9px;
-  padding: 2px 8px;
-  border-radius: 2px;
-  letter-spacing: 0.1em;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 1px;
+  letter-spacing: 0.16em;
 }
 .topbar-btn {
   background: var(--panel-head);
   border: 1px solid var(--border);
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
-  border-radius: 2px;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  padding: 4px 12px;
+  border-radius: 1px;
   cursor: pointer;
+  transition: border-color 0.1s, color 0.1s, background 0.1s;
 }
 .topbar-btn:hover {
-  border-color: var(--border-active);
+  border-color: var(--accent);
   color: var(--text-bright);
+  background: var(--accent-soft);
 }
 
 .mid {
   display: grid;
   grid-template-columns: 600px 1fr;
-  gap: 8px;
+  gap: 12px;
+  align-items: start;
 }
 @media (max-width: 680px) {
   .mid {
@@ -132,63 +159,76 @@ a {
   }
 }
 
-/* Carry area + paperdoll. Fixed 600×430 stage so the body, dots, panels, and
- * connectors share one deterministic coordinate space and stay aligned. */
+/* Carry area + paperdoll. The body/dots/connectors live in a fixed 600×430 SVG
+ * (see Paperdoll.tsx) anchored to the top; the carry box itself is taller so
+ * the now-larger floating panels have room to stack below the body without
+ * clipping. */
 .carry {
   position: relative;
   width: 600px;
-  height: 430px;
+  height: 600px;
   max-width: 100%;
 }
 .dot {
   cursor: pointer;
 }
 
-/* Container panel */
+/* Container panel — a framed tactical readout floating beside its zone. */
 .cp {
   position: absolute;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   z-index: 5;
 }
 .ch {
-  padding: 4px 7px;
+  padding: 6px 9px;
   background: var(--panel-head);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   white-space: nowrap;
 }
 .cz {
-  font-size: 8px;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 500;
   color: var(--text-faint);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
 }
 .cn {
-  font-size: 10px;
-  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-bright);
   flex: 1;
 }
 .cc {
-  font-size: 8px;
-  color: var(--text-faint);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
 }
 .cc.f {
   color: var(--full);
 }
 .ch-del {
-  font-size: 9px;
+  font-family: var(--font-display);
+  font-size: 13px;
   color: var(--text-faint);
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0 2px;
+  padding: 0 3px;
+  transition: color 0.1s;
 }
 .ch-del:hover {
-  color: var(--full);
+  color: var(--accent);
 }
 .ch-del:disabled {
   opacity: 0.3;
@@ -198,25 +238,28 @@ a {
 /* Item grids + cells */
 .ig {
   display: grid;
-  grid-template-columns: repeat(var(--cols, 4), var(--cell-size));
+  grid-template-columns: repeat(var(--cols, 3), var(--cell-size));
   grid-auto-rows: var(--cell-size);
   gap: 2px;
-  padding: 3px;
+  padding: 4px;
   justify-content: start;
 }
 .ic {
   width: var(--cell-size);
   height: var(--cell-size);
-  background: var(--cell);
+  /* subtle top-lit slot, like PUBG's recessed cells */
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(0, 0, 0, 0.28)),
+    var(--cell);
   border: 1px solid var(--border-cell);
-  border-radius: 2px;
+  border-radius: var(--radius);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 28px;
+  line-height: 1;
   cursor: pointer;
   position: relative;
-  transition: border-color 0.1s, background 0.1s;
+  transition: border-color 0.1s, background 0.1s, box-shadow 0.1s;
 }
 .ic:hover {
   border-color: var(--border-active);
@@ -224,11 +267,14 @@ a {
 }
 .ic.s {
   border-color: var(--border-sel);
-  background: #131328;
+  background: linear-gradient(180deg, rgba(232, 152, 58, 0.12), rgba(0, 0, 0, 0.2)),
+    var(--cell);
+  box-shadow: inset 0 0 0 1px rgba(232, 152, 58, 0.5), 0 0 10px rgba(232, 152, 58, 0.25);
 }
 .ic.e {
-  opacity: 0.15;
+  opacity: 0.18;
   cursor: default;
+  background: var(--cell);
 }
 .ic.e:hover {
   border-color: var(--border-cell);
@@ -236,23 +282,30 @@ a {
 }
 .ic.drop {
   border-color: var(--accent);
-  background: #1a1a3a;
-  box-shadow: 0 0 6px rgba(80, 80, 204, 0.6);
+  background: var(--accent-soft);
+  box-shadow: 0 0 10px rgba(232, 152, 58, 0.55);
 }
 .ic img {
-  width: 20px;
-  height: 20px;
+  width: 40px;
+  height: 40px;
   object-fit: contain;
 }
+/* Quantity badge — a small dark chip in the corner, count in condensed sand. */
 .ic .q {
   position: absolute;
-  bottom: 0;
+  bottom: 1px;
   right: 1px;
-  font-size: 7px;
-  color: #40406a;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text-bright);
+  background: rgba(0, 0, 0, 0.6);
+  padding: 1px 3px;
+  border-radius: 1px;
 }
 
-/* Stash */
+/* Stash — the off-body side panel */
 .stash {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -260,44 +313,56 @@ a {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 600px;
 }
 .shead {
-  padding: 5px 8px;
+  padding: 8px 10px;
   background: var(--panel-head);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
 }
 .st {
-  font-size: 10px;
-  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-bright);
   flex: 1;
 }
 .sc {
-  font-size: 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: 0.08em;
   color: var(--text-faint);
 }
 .sloc {
-  border-bottom: 1px solid #191922;
+  border-bottom: 1px solid #1d1b14;
 }
 .slh {
-  padding: 4px 8px;
+  padding: 7px 10px 5px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .sln {
-  font-size: 9px;
-  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
   flex: 1;
 }
 .sli {
-  font-size: 10px;
-  color: #3a3a5a;
+  font-size: 14px;
+  color: var(--text-dim);
 }
 .sln2 {
-  font-size: 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
   color: var(--text-faint);
 }
 .sg {
@@ -305,61 +370,70 @@ a {
   grid-template-columns: repeat(auto-fill, var(--cell-size));
   grid-auto-rows: var(--cell-size);
   gap: 2px;
-  padding: 2px 8px 5px;
+  padding: 2px 10px 8px;
   justify-content: start;
 }
 .hint {
-  font-size: 8px;
-  color: #26263a;
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: #3a382c;
   text-align: center;
-  padding: 8px;
-  letter-spacing: 0.06em;
+  padding: 12px 8px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   margin-top: auto;
 }
 
 /* Item detail */
 .detail {
-  margin-top: 8px;
+  margin-top: 4px;
   background: var(--panel);
   border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
   border-radius: var(--radius);
-  padding: 8px 10px;
-  font-size: 11px;
+  padding: 12px 14px;
   display: flex;
-  gap: 10px;
+  gap: 14px;
   align-items: flex-start;
 }
 .detail .glyph {
-  font-size: 22px;
+  font-size: 40px;
   line-height: 1;
 }
 .detail .glyph img {
-  width: 28px;
-  height: 28px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
 }
 .detail .body {
   flex: 1;
 }
 .detail .dname {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--text-bright);
-  font-size: 12px;
+  font-size: 17px;
+  text-transform: uppercase;
 }
 .detail .dmeta {
   color: var(--text-dim);
-  font-size: 10px;
-  margin-top: 3px;
+  font-size: 12px;
+  margin-top: 4px;
   line-height: 1.6;
 }
 .detail .dnotes {
   color: var(--text);
-  font-size: 10px;
-  margin-top: 5px;
+  font-size: 12px;
+  margin-top: 6px;
   line-height: 1.5;
 }
 .detail a.dlink {
   color: var(--accent);
-  font-size: 10px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   text-decoration: none;
 }
 .detail a.dlink:hover {
@@ -370,14 +444,14 @@ a {
   border: none;
   color: var(--text-faint);
   cursor: pointer;
-  font-size: 12px;
+  font-size: 16px;
 }
 
 /* Dialogs */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.66);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -386,60 +460,70 @@ a {
 .dialog {
   background: var(--panel);
   border: 1px solid var(--border-active);
+  border-top: 2px solid var(--accent);
   border-radius: var(--radius);
-  padding: 16px;
-  width: 320px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  padding: 18px;
+  width: 340px;
   max-width: 92vw;
 }
 .dialog h2 {
+  font-family: var(--font-display);
   color: var(--text-bright);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
 }
 .field {
-  margin-bottom: 10px;
+  margin-bottom: 11px;
 }
 .field label {
   display: block;
-  font-size: 9px;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
   color: var(--text-faint);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin-bottom: 4px;
+  letter-spacing: 0.1em;
+  margin-bottom: 5px;
 }
 .field input,
 .field select,
 .field textarea {
   width: 100%;
   background: var(--cell);
-  color: var(--text);
+  color: var(--text-bright);
   border: 1px solid var(--border);
-  border-radius: 2px;
-  padding: 6px 8px;
-  font-family: var(--font-mono);
-  font-size: 12px;
+  border-radius: var(--radius);
+  padding: 7px 9px;
+  font-family: var(--font-body);
+  font-size: 13px;
 }
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
   outline: none;
-  border-color: var(--border-active);
+  border-color: var(--accent);
 }
 .dialog-actions {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 .btn {
   background: var(--panel-head);
   color: var(--text-bright);
   border: 1px solid var(--border-active);
   border-radius: var(--radius);
-  padding: 6px 12px;
-  font-family: var(--font-mono);
-  font-size: 11px;
+  padding: 7px 14px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   cursor: pointer;
 }
 .btn:hover {
@@ -448,7 +532,11 @@ a {
 .btn.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: #1a1206;
+  font-weight: 600;
+}
+.btn.primary:hover {
+  background: #f2a850;
 }
 .btn.ghost {
   border-color: var(--border);
@@ -461,22 +549,26 @@ a {
 .tabs {
   display: flex;
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 .tab {
   flex: 1;
   background: var(--cell);
   border: 1px solid var(--border);
   color: var(--text-dim);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  padding: 5px;
-  border-radius: 2px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 7px;
+  border-radius: var(--radius);
   cursor: pointer;
 }
 .tab.active {
-  border-color: var(--border-active);
+  border-color: var(--accent);
   color: var(--text-bright);
+  background: var(--accent-soft);
 }
 .tab:disabled {
   opacity: 0.4;
@@ -490,13 +582,14 @@ a {
 .emoji-grid button {
   background: var(--cell);
   border: 1px solid var(--border-cell);
-  border-radius: 2px;
-  font-size: 15px;
-  padding: 3px;
+  border-radius: var(--radius);
+  font-size: 18px;
+  padding: 4px;
   cursor: pointer;
 }
 .emoji-grid button.sel {
   border-color: var(--border-sel);
+  background: var(--accent-soft);
 }
 .code-box {
   width: 100%;
@@ -506,24 +599,24 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 8px;
-  font-size: 11px;
-  font-family: var(--font-mono);
+  font-size: 12px;
+  font-family: var(--font-body);
   word-break: break-all;
   resize: vertical;
 }
 .dialog .err {
   color: var(--full);
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 6px;
 }
 .dialog .ok {
   color: var(--good);
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 6px;
 }
 .dialog .muted {
   color: var(--text-faint);
-  font-size: 10px;
+  font-size: 11px;
   margin-top: 6px;
   line-height: 1.5;
 }

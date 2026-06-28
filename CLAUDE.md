@@ -23,11 +23,16 @@ source of truth. Match it.
 - The data model lives in [`src/types/index.ts`](src/types/index.ts) — treat it
   as the contract. If you change a type, update the seed, store, and DESIGN.md
   to match.
-- Visual tokens are in [`src/styles/global.css`](src/styles/global.css), lifted
-  from the wireframe. Reuse them; don't reintroduce hardcoded hexes in
-  components.
-- Monospace UI, near-black background, indigo accent, uniform 28px cells.
-  Containers size to their contents (a 1-item container is one cell wide).
+- Visual tokens are in [`src/styles/global.css`](src/styles/global.css). Reuse
+  them; don't reintroduce hardcoded hexes in components.
+- Visual direction is a **PUBG-style tactical HUD**: warm near-black surfaces,
+  sand/khaki chrome text, a single hot-orange accent (`--accent #e8983a`) for
+  selection/equip, condensed display type (Oswald) with Barlow for body, and
+  near-sharp corners (`--radius 1px`). Inspired by PUBG for color/type/framing
+  only — not its actual layout. (The original wireframe's indigo/monospace look
+  is superseded; `docs/wireframe.html` is now stale on palette.)
+- Uniform **56px** cells; grids default to **3 columns** (a 6-item bag reads as
+  3×2). Containers size to their contents (a 1-item container is one cell wide).
 
 ## Architecture in one breath
 

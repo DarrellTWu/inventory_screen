@@ -30,7 +30,9 @@ const BODY_DY = 8;
 export function Paperdoll({ zones, activeZoneIds, connectors, onZoneActivate }: PaperdollProps) {
   return (
     <svg
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+      // Fixed 430px-tall stage anchored to the top of the (taller) carry box,
+      // so enlarging the carry to fit bigger panels never stretches the body.
+      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: STAGE_H }}
       viewBox={`0 0 ${STAGE_W} ${STAGE_H}`}
       preserveAspectRatio="none"
       xmlns="http://www.w3.org/2000/svg"
@@ -38,8 +40,8 @@ export function Paperdoll({ zones, activeZoneIds, connectors, onZoneActivate }: 
       {/* Body silhouette — non-interactive, translated to stage centre. */}
       <g
         transform={`translate(${BODY_DX} ${BODY_DY})`}
-        fill="#161622"
-        stroke="#28283a"
+        fill="#1a180f"
+        stroke="#36331f"
         strokeWidth="1.5"
         style={{ pointerEvents: 'none' }}
       >
@@ -57,7 +59,7 @@ export function Paperdoll({ zones, activeZoneIds, connectors, onZoneActivate }: 
       </g>
 
       {/* Connectors: dot → its container panel. */}
-      <g stroke="#28284a" strokeWidth="1" style={{ pointerEvents: 'none' }}>
+      <g stroke="#403a22" strokeWidth="1" style={{ pointerEvents: 'none' }}>
         {connectors.map((c, i) => (
           <line key={i} x1={c.x1} y1={c.y1} x2={c.x2} y2={c.y2} />
         ))}
@@ -72,9 +74,9 @@ export function Paperdoll({ zones, activeZoneIds, connectors, onZoneActivate }: 
             className="dot"
             cx={z.x * STAGE_W}
             cy={z.y * STAGE_H}
-            r={active ? 4 : 3}
-            fill={active ? '#1e1e32' : '#141420'}
-            stroke={active ? 'var(--border-active)' : '#222230'}
+            r={active ? 5 : 3.5}
+            fill={active ? 'rgba(232,152,58,0.18)' : '#1b1910'}
+            stroke={active ? 'var(--accent)' : '#322f20'}
             strokeWidth={active ? 1.5 : 1}
             onDoubleClick={() => onZoneActivate(z.id)}
           >

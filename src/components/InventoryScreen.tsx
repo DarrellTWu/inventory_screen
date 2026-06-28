@@ -18,17 +18,25 @@ import { CreateContainerDialog } from './CreateContainerDialog';
 import { AddItemDialog, type NewItemDraft } from './AddItemDialog';
 import { ShareDialog } from './ShareDialog';
 
-const cols = (capacity: number) => Math.min(capacity, 4);
+// Cell/grid geometry — must track the tokens in global.css (56px cells, 2px
+// gaps, 4px grid padding) so floated panels are sized/stacked accurately.
+const CELL = 56;
+const GAP = 2;
+const PAD = 4;
+const HEADER = 32; // .ch height at the larger display type
+const COLS_MAX = 3; // default to 3-wide grids (6-item bags read as 3×2)
+
+const cols = (capacity: number) => Math.min(capacity, COLS_MAX);
 
 /** Estimate a panel's pixel height so same-side panels can stack without overlap. */
 function panelHeight(capacity: number): number {
   const rows = Math.ceil(capacity / cols(capacity));
-  return 29 /* header */ + rows * 30 /* cells (28 + 2 gap) */ + 6 /* padding */;
+  return HEADER + rows * (CELL + GAP) + PAD * 2;
 }
 
-/** Panel pixel width: cell grid (28px cells, 2px gaps) + grid padding + border. */
+/** Panel pixel width: cell grid (56px cells, 2px gaps) + grid padding + border. */
 function panelWidth(capacity: number): number {
-  return 30 * cols(capacity) + 6;
+  return cols(capacity) * (CELL + GAP) + PAD * 2;
 }
 
 export function InventoryScreen() {
@@ -100,7 +108,7 @@ export function InventoryScreen() {
       for (const { c, zone } of list) {
         // Prefer to anchor the panel near its dot, but never above the running
         // cursor (which prevents overlap with the panel above it).
-        const desired = zone ? zone.y * STAGE_H - 13 : cursor;
+        const desired = zone ? zone.y * STAGE_H - HEADER / 2 : cursor;
         const top = Math.max(cursor, desired);
         const width = panelWidth(c.capacity);
         placed.push({ container: c, zone, side, top, width });
@@ -109,7 +117,7 @@ export function InventoryScreen() {
             x1: zone.x * STAGE_W,
             y1: zone.y * STAGE_H,
             x2: side === 'left' ? width : STAGE_W - width,
-            y2: top + 13,
+            y2: top + HEADER / 2,
           });
         }
         cursor = top + panelHeight(c.capacity) + 12;

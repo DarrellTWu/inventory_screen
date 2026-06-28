@@ -85,7 +85,7 @@ export const seedState: InventoryState = {
           zoneId: 'z-l-pocket',
           kind: 'wallet',
           name: 'Wallet',
-          capacity: 8,
+          capacity: 6,
           items: [
             { id: 'r2', itemId: 'cards', quantity: 4 },
             { id: 'r3', itemId: 'id', quantity: 1 },
@@ -98,7 +98,7 @@ export const seedState: InventoryState = {
           zoneId: 'z-l-belt',
           kind: 'keychain',
           name: 'Keys',
-          capacity: 8,
+          capacity: 6,
           items: [
             { id: 'r6', itemId: 'keys', quantity: 3 },
             { id: 'r7', itemId: 'key-light', quantity: 1 },
@@ -112,7 +112,7 @@ export const seedState: InventoryState = {
           zoneId: 'z-back',
           kind: 'bag',
           name: 'Backpack',
-          capacity: 8,
+          capacity: 9,
           items: [
             { id: 'r11', itemId: 'laptop', quantity: 1 },
             { id: 'r12', itemId: 'battery', quantity: 1 },
@@ -129,7 +129,7 @@ export const seedState: InventoryState = {
           zoneId: 'z-r-pocket',
           kind: 'pocket',
           name: 'Pocket carry',
-          capacity: 4,
+          capacity: 6,
           items: [
             { id: 'r19', itemId: 'phone', quantity: 1 },
             { id: 'r20', itemId: 'knife', quantity: 1 },

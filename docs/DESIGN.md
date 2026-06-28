@@ -227,15 +227,28 @@ image *bytes*.**
 
 ## Visual language
 
-Lifted into [`src/styles/global.css`](../src/styles/global.css) as tokens.
+A **PUBG-style tactical HUD** — borrowing PUBG's inventory for color, type, and
+framing only, not its layout. Defined as tokens in
+[`src/styles/global.css`](../src/styles/global.css). (Supersedes the original
+indigo/monospace "terminal" look; `wireframe.html` is now stale on palette.)
 
-- Near-black background (`#0b0b0f`), panels a touch lighter (`#121218`).
-- Monospace UI chrome for the "game terminal" feel.
-- Indigo accent (`#5050cc`) for active/selected; muted red (`#7a3535`) when a
-  container is at capacity.
-- Uniform **28px** item cells everywhere. Containers size to their contents —
-  a 1-item container is exactly one cell wide, no dead space.
-- Zone dots: dim when inactive, indigo-ringed when active.
+- Warm near-black background (`--bg #0c0b08`) with a faint sunlit-dust radial
+  wash; panels a touch lighter (`--panel #16150f`).
+- **Condensed display type** (Oswald) for all chrome — topbar, panel/zone
+  headers, labels, counts, buttons — uppercase and letter-spaced like a HUD
+  readout. Body copy (item names in detail, notes, inputs) uses Barlow.
+- A single **hot-orange accent** (`--accent #e8983a`, "loot/equip" orange) for
+  selection, active zone dots, and primary buttons; sand/khaki
+  (`--text-bright #d9d0b4`) for emphasized chrome text; danger red-orange
+  (`--full #c0492f`) when a container is at capacity. Olive (`--good`) for the
+  "online"/success tag.
+- Near-sharp corners (`--radius 1px`) for the tactical, framed feel.
+- Uniform **56px** item cells (doubled from the original 28px), top-lit like a
+  recessed slot. Grids default to **3 columns** — a 6-item bag reads as 3×2.
+  Containers still size to their contents — a 1-item container is exactly one
+  cell wide, no dead space.
+- Zone dots: dim warm-gray when inactive, orange-ringed (with a soft orange
+  fill) when active.
 
 ## Sharing & persistence
 

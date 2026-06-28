@@ -19,16 +19,18 @@ const KINDS: ContainerKind[] = [
   'custom',
 ];
 
+// Default to 6-slot (3×2) bags now that cells are larger — keeps freshly
+// created panels compact. Single-slot kinds (watch/belt) stay 1.
 const DEFAULT_CAPACITY: Record<ContainerKind, number> = {
   watch: 1,
   belt: 1,
-  wallet: 8,
-  keychain: 8,
-  bag: 8,
-  pocket: 4,
-  holster: 4,
-  pouch: 4,
-  custom: 4,
+  wallet: 6,
+  keychain: 6,
+  bag: 6,
+  pocket: 6,
+  holster: 6,
+  pouch: 6,
+  custom: 6,
 };
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);

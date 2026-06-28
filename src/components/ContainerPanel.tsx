@@ -32,7 +32,7 @@ export function ContainerPanel({
   const { setNodeRef, isOver } = useDroppable({ id: container.id });
   const used = container.items.length;
   const full = used >= container.capacity;
-  const cols = Math.min(container.capacity, 4);
+  const cols = Math.min(container.capacity, 3);
 
   // Filled cells, then empty placeholders up to capacity. The first empty slot
   // doubles as the "add item" affordance.
