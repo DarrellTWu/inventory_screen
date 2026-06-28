@@ -16,8 +16,9 @@ source of truth. Match it.
 
 ## Stack & conventions
 
-- React 18 + TypeScript (strict) + Vite. State in **zustand** with `persist`.
-  Drag-and-drop with **@dnd-kit**. Ids via **nanoid**.
+- React 18 + TypeScript (strict) + Vite. State in **zustand** with `persist`
+  (localStorage). Drag-and-drop with **@dnd-kit**. Ids via **nanoid**.
+  Build sharing compresses with **lz-string**. Tests via **vitest**.
 - Import alias: `@/` → `src/`.
 - The data model lives in [`src/types/index.ts`](src/types/index.ts) — treat it
   as the contract. If you change a type, update the seed, store, and DESIGN.md
@@ -52,6 +53,16 @@ Nothing is built yet beyond a placeholder `App.tsx`. Suggested pieces:
 the heart of the drag-and-drop. Implement it to splice an ItemRef between
 holders (containers or stash locations), respecting container `capacity`. See
 the "Drag and drop" section of DESIGN.md.
+
+## Sharing (built)
+
+Builds save locally (zustand `persist`) and export to self-contained,
+URL-safe **share codes** — no backend. `exportBuild` / `importBuildCode` in the
+store wrap [`src/lib/share.ts`](src/lib/share.ts); codes ride the URL hash
+(`#build=<code>`) via [`src/lib/shareUrl.ts`](src/lib/shareUrl.ts). Lite (no
+notes/URLs) is the default payload. A future Upstash-Redis short-link backend is
+designed but not built — see DESIGN.md "Sharing". Keep the share data format
+stable; bump `SHARE_VERSION` and branch if you must change it.
 
 ## House rules
 

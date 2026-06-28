@@ -9,8 +9,15 @@ import type {
   InventoryState,
   Item,
   StashLocation,
+  Zone,
 } from '@/types';
 import { seedState } from '@/data/seed';
+import {
+  collectSharedBuild,
+  decodeSharedBuild,
+  encodeSharedBuild,
+  type ExportOptions,
+} from '@/lib/share';
 
 /**
  * Central store. Holds the persisted InventoryState plus the actions that
@@ -57,6 +64,16 @@ interface InventoryActions {
 
   /** Reset everything back to the seeded personal setup. */
   resetToSeed: () => void;
+
+  /** Serialize a build into a self-contained, shareable code. Lite by default. */
+  exportBuild: (buildId: Id, opts?: ExportOptions) => string | null;
+
+  /**
+   * Import a shared build code: merges its items into the catalog with fresh
+   * ids, adds its zones and a new build, and makes it active. Returns the new
+   * build id. Throws (ShareDecodeError) on an invalid code.
+   */
+  importBuildCode: (code: string) => Id;
 }
 
 type Store = InventoryState & InventoryActions;
@@ -125,6 +142,62 @@ export const useInventory = create<Store>()(
         set((s) => ({ stash: s.stash.filter((l) => l.id !== locationId) })),
 
       resetToSeed: () => set({ ...seedState }),
+
+      exportBuild: (buildId, opts) => {
+        const s = get();
+        const build = s.builds.find((b) => b.id === buildId);
+        if (!build) return null;
+        const shared = collectSharedBuild(build, s.zones, s.items);
+        return encodeSharedBuild(shared, opts);
+      },
+
+      importBuildCode: (code) => {
+        const shared = decodeSharedBuild(code); // throws on bad input
+
+        // Remap every incoming id to a fresh local id so an import can never
+        // clobber existing data. itemId/zoneId references are rewritten too.
+        const itemIdMap = new Map<Id, Id>();
+        const newItems: Record<Id, (typeof shared.items)[number]> = {};
+        for (const it of shared.items) {
+          const newId = nanoid();
+          itemIdMap.set(it.id, newId);
+          newItems[newId] = { ...it, id: newId };
+        }
+
+        const zoneIdMap = new Map<Id, Id>();
+        const newZones: Zone[] = shared.zones.map((z) => {
+          const newId = nanoid();
+          zoneIdMap.set(z.id, newId);
+          return { ...z, id: newId };
+        });
+
+        const newBuildId = nanoid();
+        const newContainers: Container[] = shared.containers.map((c) => ({
+          ...c,
+          id: nanoid(),
+          zoneId: zoneIdMap.get(c.zoneId) ?? c.zoneId,
+          items: c.items.map((r) => ({
+            id: nanoid(),
+            itemId: itemIdMap.get(r.itemId) ?? r.itemId,
+            quantity: r.quantity,
+          })),
+        }));
+
+        const newBuild: Build = {
+          id: newBuildId,
+          name: shared.name,
+          containers: newContainers,
+        };
+
+        set((s) => ({
+          items: { ...s.items, ...newItems },
+          zones: [...s.zones, ...newZones],
+          builds: [...s.builds, newBuild],
+          activeBuildId: newBuildId,
+        }));
+
+        return newBuildId;
+      },
     }),
     {
       name: 'edc-inventory',

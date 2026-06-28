@@ -9,8 +9,9 @@ home. Each item links out to a store listing so its icon and details fill in
 automatically. The goal: make organizing your carry as satisfying as tuning a
 character build in an RPG.
 
-> **Status: scaffold.** The data model, store, seed data, and the visual
-> wireframe are in place. The interactive screen is not built yet — see
+> **Status: scaffold.** The data model, store, seed data, local save, build
+> sharing (self-contained codes, no backend), and the visual wireframe are in
+> place. The interactive screen is not built yet — see
 > [`docs/DESIGN.md`](docs/DESIGN.md) and [`docs/wireframe.html`](docs/wireframe.html).
 
 ## Quick look
@@ -46,9 +47,20 @@ Stash (off-body)                            │   (canonical defs)
 ## Tech stack
 
 - **React + TypeScript + Vite**
-- **zustand** (`persist` → localStorage) for state
+- **zustand** (`persist` → localStorage) for state + local save
 - **@dnd-kit** for drag-and-drop between containers and stash
+- **lz-string** for compressing builds into shareable URL codes
 - **nanoid** for ids
+- **vitest** for tests
+
+## Saving & sharing
+
+Your loadout saves automatically in the browser (localStorage). Export any
+build as a self-contained **share link** — the build is compressed into the URL
+itself (`#build=<code>`), so anyone who opens the link gets your build, no
+account or server required. Shared builds are "lite" by default (no personal
+notes or store URLs). A future backend phase adds short links + accounts; see
+[`docs/DESIGN.md`](docs/DESIGN.md).
 
 ## Project layout
 
@@ -59,7 +71,9 @@ docs/
 src/
   types/index.ts     the data model (start here)
   data/seed.ts       preloaded personal setup (placeholder)
-  store/useInventory.ts   zustand store + actions
+  store/useInventory.ts   zustand store + actions (incl. export/import)
+  lib/share.ts       build ⇄ share-code serialization (+ share.test.ts)
+  lib/shareUrl.ts    #build=<code> URL hash helpers
   components/        (to build) Paperdoll, ContainerPanel, StashPanel…
   styles/global.css  design tokens lifted from the wireframe
 CLAUDE.md            guidance for AI coding agents

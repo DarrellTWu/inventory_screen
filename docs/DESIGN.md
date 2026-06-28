@@ -108,14 +108,60 @@ Lifted into [`src/styles/global.css`](../src/styles/global.css) as tokens.
   a 1-item container is exactly one cell wide, no dead space.
 - Zone dots: dim when inactive, indigo-ringed when active.
 
+## Sharing & persistence
+
+Two layers, deliberately staged so the no-backend version ships first.
+
+### Today — local save + self-contained share codes (no backend)
+
+- **Save** is automatic: the whole `InventoryState` persists to `localStorage`
+  via zustand's `persist` middleware. Nothing to host.
+- **Share** is self-contained. A build (its zones, containers, and the catalog
+  items they reference) serializes to a compact positional-array form, gets
+  compressed with `lz-string`, and becomes a URL-safe **share code**. The code
+  *is* the build — paste it and the app reconstructs everything. See
+  [`src/lib/share.ts`](../src/lib/share.ts).
+- Codes ride in the URL **hash** (`#build=<code>`), so they never hit a server
+  and dodge server URL-length limits. See
+  [`src/lib/shareUrl.ts`](../src/lib/shareUrl.ts).
+- **Lite by default**: shared builds drop `notes`, `sourceUrl`, and `iconUrl`,
+  keeping name, brand, emoji, and weight. Keeps codes small and avoids leaking
+  personal annotations. `exportBuild(id, { lite: false })` shares everything.
+- **Import is non-destructive**: `importBuildCode` remaps every incoming id to a
+  fresh local id, so importing can never clobber existing data. It adds a new
+  build and makes it active.
+
+Measured sizes (worst case, 45 items): ~1.2KB code lite, ~1.7KB full — both
+well within URL limits. Realistic builds are smaller.
+
+### Future — backend phase
+
+When pretty short links (`/build/darrells-edc`) and accounts are wanted:
+
+- **Short-link / share store → Upstash Redis.** A share is just
+  `SET build:<key> <json>` (optionally with a TTL). Serverless, HTTP-based
+  (works from a Worker/edge function), pay-per-request. This is the natural home
+  for *public, ephemeral* share keys, plus caching and rate-limiting the share
+  endpoint. The `/build/:key` route resolves a long code locally or a short slug
+  via the API — the build data format is identical either way, so this is purely
+  additive.
+- **Accounts + multiple saved builds → Postgres, not Redis.** "All builds for
+  user X", auth, and a possible browse/gallery are relational; Redis as the
+  primary store there means hand-rolling indexes. Use Postgres as the
+  system-of-record ([Supabase](https://supabase.com) bundles Postgres + Auth +
+  storage for uploaded icons), and keep Upstash Redis alongside for share keys
+  and caching. Don't force account data into Redis.
+
 ## Open questions / future work
 
-- **Builds UI** — switching, creating, duplicating loadouts (only the data
-  model exists today).
+- **Builds UI** — switching, creating, duplicating loadouts (data model +
+  export/import codes exist; the picker UI does not).
+- **Share UI** — replace the placeholder export/import buttons with a real
+  dialog (lite/full toggle, copy button, QR code).
 - **Weight totals** — per-container and per-build, from `weightGrams`.
 - **Item catalog browser** — manage items independent of placement.
-- **Import/export** — JSON now; consider sharing builds with the community.
-- **Persistence** — localStorage today; SQLite via Tauri for a desktop app.
+- **Item catalog dedupe on import** — imports currently insert fresh item
+  copies every time; dedupe by identity (name+brand) later.
 - **Dot ↔ paperdoll alignment** — dot positions are hand-placed and slightly
   off the silhouette in the wireframe; needs tuning when ported to React with
   normalized (0..1) zone coordinates.
