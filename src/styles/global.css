@@ -1,0 +1,62 @@
+/* EDC Inventory — global styles & design tokens
+ * The canonical visual reference is docs/wireframe.html. These tokens are
+ * lifted from it so React components can share the same palette.
+ */
+
+:root {
+  /* surfaces */
+  --bg: #0b0b0f;
+  --panel: #121218;
+  --panel-head: #17171e;
+  --cell: #0c0c12;
+  --cell-hover: #151528;
+
+  /* borders */
+  --border: #22222e;
+  --border-cell: #1c1c28;
+  --border-active: #5050aa;
+  --border-sel: #5050cc;
+
+  /* text */
+  --text: #9090b0;
+  --text-dim: #5a5a7a;
+  --text-faint: #353550;
+  --text-bright: #b0b0d0;
+
+  /* accents */
+  --accent: #5050cc;
+  --good: #4a8a4a;
+  --good-bg: #141e14;
+  --good-border: #253525;
+  --full: #7a3535;
+
+  /* sizing */
+  --cell-size: 28px;
+  --radius: 3px;
+
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'JetBrains Mono', Menlo,
+    Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EDC Inventory — wireframe</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css" />
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#070709;font-family:ui-monospace,'SF Mono','Cascadia Code',Menlo,Consolas,monospace;color:#9090b0;padding:24px;min-height:100vh}
+.wrap{max-width:920px;margin:0 auto}
+.note{font-size:11px;color:#44445a;text-align:center;margin-bottom:14px;letter-spacing:.06em}
+.inv{background:#0b0b0f;border:1px solid #1a1a22;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.topbar{display:flex;align-items:center;gap:6px;padding:4px 6px 8px;border-bottom:1px solid #1a1a22;color:#5a5a7a;font-size:10px;letter-spacing:.1em}
+.topbar em{color:#9090b0;font-style:normal}
+.btag{margin-left:auto;background:#141e14;border:1px solid #253525;color:#4a8a4a;font-size:9px;padding:2px 8px;border-radius:2px;letter-spacing:.1em}
+.mid{display:grid;grid-template-columns:2fr 1fr;gap:8px}
+.carry{position:relative;height:430px}
+.cp{position:absolute;background:#121218;border:1px solid #22222e;border-radius:3px;z-index:5}
+.ch{padding:4px 7px;background:#17171e;border-bottom:1px solid #22222e;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.cz{font-size:8px;color:#353550;text-transform:uppercase;letter-spacing:.06em}
+.cn{font-size:10px;color:#8888b0;flex:1}
+.cc{font-size:8px;color:#353550}
+.cc.f{color:#7a3535}
+.ig{display:grid;grid-template-columns:repeat(var(--cols,4),28px);grid-auto-rows:28px;gap:2px;padding:3px;justify-content:start}
+.ic{width:28px;height:28px;background:#0c0c12;border:1px solid #1c1c28;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;position:relative;transition:border-color .1s,background .1s}
+.ic:hover{border-color:#4848a8;background:#151528}
+.ic.s{border-color:#5050cc;background:#131328}
+.ic.e{opacity:.15;cursor:default}
+.ic.e:hover{border-color:#1c1c28;background:#0c0c12}
+.ic .q{position:absolute;bottom:0;right:1px;font-size:7px;color:#40406a}
+.stash{background:#121218;border:1px solid #22222e;border-radius:3px;display:flex;flex-direction:column;overflow:hidden}
+.shead{padding:5px 8px;background:#17171e;border-bottom:1px solid #22222e;display:flex;align-items:center;gap:5px}
+.st{font-size:10px;color:#8888b0;flex:1}
+.sc{font-size:8px;color:#353550}
+.sloc{border-bottom:1px solid #191922}
+.slh{padding:4px 8px;display:flex;align-items:center;gap:6px}
+.sln{font-size:9px;color:#5a5a7a;flex:1}
+.sli{font-size:10px;color:#3a3a5a}
+.sln2{font-size:8px;color:#333350}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,28px);grid-auto-rows:28px;gap:2px;padding:2px 8px 5px;justify-content:start}
+.hint{font-size:8px;color:#26263a;text-align:center;padding:8px;letter-spacing:.06em;margin-top:auto}
+@media(max-width:680px){.mid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="note">EDC Inventory — visual wireframe (source of truth for the build). Dots = carry zones; double-click to create a container.</div>
+
+<div class="inv">
+
+<div class="topbar">
+  <em>EDC INVENTORY</em>
+  <span style="color:#1e1e28">//</span>
+  <span>daily carry</span>
+  <span class="btag">● EDC DAILY</span>
+</div>
+
+<div class="mid">
+
+  <div class="carry">
+
+    <svg style="position:absolute;left:155px;top:8px;width:170px;height:415px" viewBox="0 0 170 415" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="85" cy="35" rx="22" ry="24" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <path d="M52 108 Q52 76 65 65 Q72 58 85 56 Q98 58 105 65 Q118 76 118 108 L114 158 L56 158Z" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <path d="M56 108 L32 170 L43 174 L60 122 L56 108Z" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <path d="M114 108 L138 170 L127 174 L110 122 L114 108Z" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <ellipse cx="33" cy="174" rx="12" ry="9" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <ellipse cx="137" cy="174" rx="12" ry="9" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <path d="M58 158 L53 250 L67 250 L85 188 L103 250 L117 250 L112 158Z" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <path d="M53 250 L47 348 L63 348 L68 264 L67 250Z" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <path d="M117 250 L123 348 L107 348 L102 264 L103 250Z" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <ellipse cx="55" cy="350" rx="16" ry="8" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+      <ellipse cx="115" cy="350" rx="16" ry="8" fill="#161622" stroke="#28283a" stroke-width="1.5"/>
+    </svg>
+
+    <svg style="position:absolute;top:0;left:0;width:100%;height:430px;pointer-events:none;z-index:10" viewBox="0 0 450 430" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="130" y1="118" x2="182" y2="178" stroke="#28284a" stroke-width="1"/>
+      <line x1="130" y1="205" x2="212" y2="218" stroke="#28284a" stroke-width="1"/>
+      <line x1="130" y1="318" x2="208" y2="258" stroke="#28284a" stroke-width="1"/>
+      <line x1="320" y1="100" x2="240" y2="100" stroke="#28284a" stroke-width="1"/>
+      <line x1="320" y1="200" x2="268" y2="218" stroke="#28284a" stroke-width="1"/>
+
+      <circle cx="240" cy="43"  r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="240" cy="66"  r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="206" cy="96"  r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="274" cy="96"  r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="188" cy="138" r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="292" cy="138" r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="300" cy="178" r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="240" cy="170" r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="216" cy="188" r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="264" cy="188" r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+      <circle cx="268" cy="258" r="3" fill="#141420" stroke="#222230" stroke-width="1"/>
+
+      <circle cx="182" cy="178" r="4" fill="#1e1e32" stroke="#5050aa" stroke-width="1.5"/>
+      <circle cx="212" cy="218" r="4" fill="#1e1e32" stroke="#5050aa" stroke-width="1.5"/>
+      <circle cx="208" cy="258" r="4" fill="#1e1e32" stroke="#5050aa" stroke-width="1.5"/>
+      <circle cx="240" cy="100" r="4" fill="#1e1e32" stroke="#5050aa" stroke-width="1.5"/>
+      <circle cx="268" cy="218" r="4" fill="#1e1e32" stroke="#5050aa" stroke-width="1.5"/>
+    </svg>
+
+    <div class="cp" style="left:0;top:90px">
+      <div class="ch"><span class="cz">L wrist</span><span class="cn">Watch</span><span class="cc">1/1</span></div>
+      <div class="ig" style="--cols:1"><div class="ic">⌚</div></div>
+    </div>
+
+    <div class="cp" style="left:0;top:160px">
+      <div class="ch"><span class="cz">L pocket</span><span class="cn">Wallet</span><span class="cc">4/8</span></div>
+      <div class="ig" style="--cols:4">
+        <div class="ic">💳<span class="q">×4</span></div><div class="ic">🪪</div><div class="ic">💵</div><div class="ic">🏧</div>
+        <div class="ic e"></div><div class="ic e"></div><div class="ic e"></div><div class="ic e"></div>
+      </div>
+    </div>
+
+    <div class="cp" style="left:0;top:270px">
+      <div class="ch"><span class="cz">L belt</span><span class="cn">Keys</span><span class="cc">5/8</span></div>
+      <div class="ig" style="--cols:4">
+        <div class="ic">🔑<span class="q">×3</span></div><div class="ic">🔦</div><div class="ic">🔧</div><div class="ic">💊</div>
+        <div class="ic">🆔</div><div class="ic e"></div><div class="ic e"></div><div class="ic e"></div>
+      </div>
+    </div>
+
+    <div class="cp" style="right:0;top:58px">
+      <div class="ch"><span class="cz">back</span><span class="cn">Backpack</span><span class="cc f">8/8</span></div>
+      <div class="ig" style="--cols:4">
+        <div class="ic">💻</div><div class="ic">🔋</div><div class="ic">🎧</div><div class="ic">📓</div>
+        <div class="ic">💊</div><div class="ic">🧴</div><div class="ic">🔌</div><div class="ic">🗝️</div>
+      </div>
+    </div>
+
+    <div class="cp" style="right:0;top:172px">
+      <div class="ch"><span class="cz">R pocket</span><span class="cn">Pocket carry</span><span class="cc">4/4</span></div>
+      <div class="ig" style="--cols:4">
+        <div class="ic s">📱</div><div class="ic">🔪</div><div class="ic">✏️</div><div class="ic">💡</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="stash">
+    <div class="shead">
+      <i class="ti ti-archive" style="font-size:11px;color:#4a4a6a"></i>
+      <span class="st">Stash</span>
+      <span class="sc">14 items</span>
+    </div>
+
+    <div class="sloc">
+      <div class="slh"><i class="ti ti-home sli"></i><span class="sln">Home base</span><span class="sln2">5</span></div>
+      <div class="sg">
+        <div class="ic">🔦</div><div class="ic">🔧</div><div class="ic">🪫</div><div class="ic">📦</div>
+        <div class="ic">🔒</div><div class="ic e"></div>
+      </div>
+    </div>
+
+    <div class="sloc">
+      <div class="slh"><i class="ti ti-car sli"></i><span class="sln">Car</span><span class="sln2">3</span></div>
+      <div class="sg">
+        <div class="ic">🩹</div><div class="ic">🧯</div><div class="ic">🔦</div><div class="ic e"></div>
+      </div>
+    </div>
+
+    <div class="sloc">
+      <div class="slh"><i class="ti ti-bed sli"></i><span class="sln">Nightstand</span><span class="sln2">2</span></div>
+      <div class="sg">
+        <div class="ic">💊</div><div class="ic">📖</div><div class="ic e"></div>
+      </div>
+    </div>
+
+    <div class="sloc">
+      <div class="slh"><i class="ti ti-briefcase sli"></i><span class="sln">Work desk</span><span class="sln2">4</span></div>
+      <div class="sg">
+        <div class="ic">🔋</div><div class="ic">📎</div><div class="ic">✂️</div><div class="ic">🖊️</div>
+      </div>
+    </div>
+
+    <div class="hint">double-click a dot to create container</div>
+  </div>
+
+</div>
+</div>
+</div>
+</body>
+</html>
