@@ -81,8 +81,8 @@ CLAUDE.md            guidance for AI coding agents
 
 ## Where to start building
 
-1. Read [`docs/DESIGN.md`](docs/DESIGN.md) and open the wireframe.
-2. Implement `moveItem` in the store (the core drag-and-drop action).
-3. Build `<Paperdoll>` (SVG + zone dots), `<ContainerPanel>`, `<StashPanel>`.
-4. Wire the double-click-a-dot → create-container dialog.
-5. Replace the placeholder seed with the real personal loadout.
+Follow [`docs/SPRINT-1.md`](docs/SPRINT-1.md) — the ordered plan to an
+interactive MVP (store `moveItem` first, then paperdoll → containers → stash →
+drag-and-drop → create-container → manual add → share), with per-step checks and
+a QA checklist. Read [`docs/DESIGN.md`](docs/DESIGN.md) and open the wireframe
+first.

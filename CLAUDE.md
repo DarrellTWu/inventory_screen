@@ -37,7 +37,8 @@ source of truth. Match it.
 
 ## Build it out under `src/components/`
 
-Nothing is built yet beyond a placeholder `App.tsx`. Suggested pieces:
+The plan to MVP is [`docs/SPRINT-1.md`](docs/SPRINT-1.md) — follow its ordered
+steps and checks. Nothing is built yet beyond a placeholder `App.tsx`. Pieces:
 
 - `Paperdoll` — SVG silhouette + zone dots (active/inactive states).
 - `ContainerPanel` — a floating per-zone grid with a header + connector line.
