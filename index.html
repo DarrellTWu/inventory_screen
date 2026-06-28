@@ -4,6 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Tabler icon font for stash icons. Loaded non-render-blocking so first
+         paint never waits on the CDN (and offline still renders, sans icons). -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css"
+      media="print"
+      onload="this.media='all'"
+    />
     <title>EDC Inventory</title>
   </head>
   <body>

@@ -8,6 +8,7 @@ import type {
   Id,
   InventoryState,
   Item,
+  ItemRef,
   StashLocation,
   Zone,
 } from '@/types';
@@ -58,6 +59,16 @@ interface InventoryActions {
    */
   moveItem: (refId: Id, fromHolderId: Id, toHolderId: Id, toIndex?: number) => void;
 
+  /**
+   * Place an item into a holder (container or stash) as a new ItemRef. Used by
+   * "add item". Respects container capacity (no-op when full). Returns the new
+   * ItemRef id, or null if the holder is missing or full.
+   */
+  addItemRef: (holderId: Id, itemId: Id, quantity?: number) => Id | null;
+
+  /** Remove an ItemRef from a holder. */
+  removeItemRef: (holderId: Id, refId: Id) => void;
+
   /** Manage off-body stash locations. */
   addStashLocation: (name: string, icon: string) => Id;
   removeStashLocation: (locationId: Id) => void;
@@ -77,6 +88,52 @@ interface InventoryActions {
 }
 
 type Store = InventoryState & InventoryActions;
+
+/** A resolved holder: a container in the active build, or a stash location. */
+interface ResolvedHolder {
+  kind: 'container' | 'stash';
+  items: ItemRef[];
+  /** Slot cap for containers; `undefined` means uncapped (stash). */
+  capacity?: number;
+}
+
+/**
+ * Resolve a holder by id, searching the active build's containers first, then
+ * the build-independent stash. Keeps `moveItem`/`addItemRef` agnostic about
+ * which kind of holder they're touching.
+ */
+function findHolder(s: InventoryState, holderId: Id): ResolvedHolder | undefined {
+  const build = s.builds.find((b) => b.id === s.activeBuildId);
+  const container = build?.containers.find((c) => c.id === holderId);
+  if (container) {
+    return { kind: 'container', items: container.items, capacity: container.capacity };
+  }
+  const location = s.stash.find((l) => l.id === holderId);
+  if (location) return { kind: 'stash', items: location.items };
+  return undefined;
+}
+
+/**
+ * Produce a state patch that replaces the `items` array of one or more holders
+ * (keyed by id) across the active build's containers and the stash.
+ */
+function applyHolderItems(
+  s: InventoryState,
+  updates: Record<Id, ItemRef[]>,
+): Partial<InventoryState> {
+  const builds = s.builds.map((b) =>
+    b.id !== s.activeBuildId
+      ? b
+      : {
+          ...b,
+          containers: b.containers.map((c) =>
+            c.id in updates ? { ...c, items: updates[c.id] } : c,
+          ),
+        },
+  );
+  const stash = s.stash.map((l) => (l.id in updates ? { ...l, items: updates[l.id] } : l));
+  return { builds, stash };
+}
 
 export const useInventory = create<Store>()(
   persist(
@@ -125,11 +182,63 @@ export const useInventory = create<Store>()(
           };
         }),
 
-      // TODO(agent): implement holder resolution + reordering. See DESIGN.md.
-      moveItem: (_refId, _fromHolderId, _toHolderId, _toIndex) => {
-        void get;
-        throw new Error('moveItem not implemented yet — see DESIGN.md "Drag and drop".');
+      moveItem: (refId, fromHolderId, toHolderId, toIndex) =>
+        set((s) => {
+          const from = findHolder(s, fromHolderId);
+          const to = findHolder(s, toHolderId);
+          if (!from || !to) return {};
+
+          const ref = from.items.find((r) => r.id === refId);
+          if (!ref) return {};
+
+          // Same holder → reorder within its own list.
+          if (fromHolderId === toHolderId) {
+            const reordered = from.items.filter((r) => r.id !== refId);
+            const idx = toIndex ?? reordered.length;
+            reordered.splice(idx, 0, ref);
+            return applyHolderItems(s, { [fromHolderId]: reordered });
+          }
+
+          // Cross-holder → reject a drop that would overflow a container.
+          if (to.capacity !== undefined && to.items.length >= to.capacity) {
+            return {};
+          }
+
+          const fromItems = from.items.filter((r) => r.id !== refId);
+          const toItems = [...to.items];
+          const idx = toIndex ?? toItems.length;
+          toItems.splice(idx, 0, ref);
+          return applyHolderItems(s, {
+            [fromHolderId]: fromItems,
+            [toHolderId]: toItems,
+          });
+        }),
+
+      addItemRef: (holderId, itemId, quantity = 1) => {
+        const id = nanoid();
+        let placed = false;
+        set((s) => {
+          const holder = findHolder(s, holderId);
+          if (!holder) return {};
+          // Respect container capacity; stash is uncapped.
+          if (holder.capacity !== undefined && holder.items.length >= holder.capacity) {
+            return {};
+          }
+          placed = true;
+          const ref: ItemRef = { id, itemId, quantity };
+          return applyHolderItems(s, { [holderId]: [...holder.items, ref] });
+        });
+        return placed ? id : null;
       },
+
+      removeItemRef: (holderId, refId) =>
+        set((s) => {
+          const holder = findHolder(s, holderId);
+          if (!holder) return {};
+          return applyHolderItems(s, {
+            [holderId]: holder.items.filter((r) => r.id !== refId),
+          });
+        }),
 
       addStashLocation: (name, icon) => {
         const id = nanoid();
@@ -201,7 +310,21 @@ export const useInventory = create<Store>()(
     }),
     {
       name: 'edc-inventory',
-      version: 1,
+      version: 2,
+      // v1→v2: zone coordinates were re-tuned to sit on the paperdoll (and the
+      // candidate set grew). Existing persisted state keeps the old positions
+      // otherwise, so adopt the canonical seed zones by id while preserving any
+      // imported zones not present in the seed. Container zoneId refs are
+      // unchanged (ids are stable), so nothing else needs touching.
+      migrate: (persisted, fromVersion) => {
+        const s = persisted as InventoryState;
+        if (fromVersion < 2 && s?.zones) {
+          const seedIds = new Set(seedState.zones.map((z) => z.id));
+          const extras = s.zones.filter((z) => !seedIds.has(z.id));
+          s.zones = [...seedState.zones, ...extras];
+        }
+        return s;
+      },
     },
   ),
 );

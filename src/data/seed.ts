@@ -47,12 +47,25 @@ export const seedState: InventoryState = {
   version: 1,
   items: itemsById,
   activeBuildId: 'build-daily',
+  // Full candidate carry-zone set. Coordinates are normalized (0..1) over the
+  // 600×430 paperdoll stage, placed to sit directly on the silhouette (which is
+  // drawn centered in that same stage — see Paperdoll.tsx). A zone with no
+  // container pointing at it renders as an inactive dot. The 5 ids referenced
+  // by seed containers below stay stable.
   zones: [
-    { id: 'z-l-wrist', x: 0.4, y: 0.42, side: 'left', label: 'L wrist' },
-    { id: 'z-l-pocket', x: 0.47, y: 0.52, side: 'left', label: 'L front pocket' },
-    { id: 'z-l-belt', x: 0.46, y: 0.6, side: 'left', label: 'L belt' },
-    { id: 'z-back', x: 0.53, y: 0.24, side: 'right', label: 'Upper back' },
-    { id: 'z-r-pocket', x: 0.59, y: 0.52, side: 'right', label: 'R front pocket' },
+    // — active in the seed build —
+    { id: 'z-l-wrist', x: 0.413, y: 0.423, side: 'left', label: 'L wrist' },
+    { id: 'z-l-pocket', x: 0.472, y: 0.442, side: 'left', label: 'L front pocket' },
+    { id: 'z-l-belt', x: 0.475, y: 0.402, side: 'left', label: 'Waist / belt' },
+    { id: 'z-back', x: 0.5, y: 0.153, side: 'right', label: 'Upper back' },
+    { id: 'z-r-pocket', x: 0.528, y: 0.442, side: 'right', label: 'R front pocket' },
+    // — inactive candidates —
+    { id: 'z-head', x: 0.5, y: 0.1, side: 'right', label: 'Head' },
+    { id: 'z-l-chest', x: 0.462, y: 0.186, side: 'left', label: 'L chest' },
+    { id: 'z-r-chest', x: 0.538, y: 0.186, side: 'right', label: 'R chest' },
+    { id: 'z-r-wrist', x: 0.587, y: 0.423, side: 'right', label: 'R wrist' },
+    { id: 'z-r-hand', x: 0.587, y: 0.449, side: 'right', label: 'R hand' },
+    { id: 'z-r-thigh', x: 0.53, y: 0.558, side: 'right', label: 'R thigh' },
   ],
   builds: [
     {
