@@ -46,10 +46,14 @@ Nothing is built yet beyond a placeholder `App.tsx`. Suggested pieces:
 - `CreateContainerDialog` — the double-click-a-dot flow (kind, name, capacity).
 - `ItemDetail` — selected-item panel with the external link-out.
 - `AddItemDialog` — two modes: manual (emoji + name + details) or from a store
-  URL (Amazon first) that scrapes a product image. Icon is user-editable, with
-  emoji always kept as a fallback. See DESIGN.md "Adding items" — and note the
-  scrape needs a metadata API or tiny Worker (CORS blocks client-side fetch),
-  and share codes carry image *URLs*, never image *bytes*.
+  URL (Amazon first). The URL mode is a **Reddit-style link preview**: paste a
+  link, pick from scraped candidate thumbnails — not manual. Needs a scrape
+  service (a Cloudflare Worker `/api/preview` returning `{title, images[]}`;
+  CORS blocks client-side fetch). Emoji always kept as fallback; share codes
+  carry image *URLs*, never image *bytes*. See DESIGN.md "Adding items".
+- Items with a `sourceUrl` are **clickable** → open the store page. Affiliate
+  tags are applied at click time from app config (store clean URLs). See
+  DESIGN.md "Click-through & affiliate links".
 
 ## The one unimplemented core action
 

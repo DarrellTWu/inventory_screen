@@ -109,44 +109,66 @@ The user enters the item by hand:
 
 No network involved. This is the baseline path and always works offline.
 
-### 2. From a URL (store listing)
+### 2. From a URL (store listing) — Reddit-style link preview
 
-The user pastes a product URL — **Amazon listings supported first** — and we
-make a best effort to pull the product image to use as the icon, plus a
-suggested name. The user can then edit anything, including swapping the scraped
-image for a different image URL or an emoji.
+The user pastes a product URL — **Amazon listings supported first** — and the
+app scrapes the page and presents a **gallery of candidate thumbnails to choose
+from** (like submitting a link on Reddit), plus a suggested name. The user picks
+the image they want; they can still override with their own image or an emoji
+afterward. **This is not a manual flow** — paste a link, pick a picture, done.
 
-- We resolve the listing's image (Open Graph `og:image`, or the listing's main
-  product image) and store it as `iconUrl`. `sourceUrl` keeps the listing link.
-- Always auto-assign a fallback `emoji` too (e.g. a category default), so the
-  item still renders if the image ever fails to load.
-- The icon is **user-editable**: replace with another image URL, upload, or fall
-  back to emoji.
+- The scrape returns *multiple* candidate images (product gallery, `og:image`,
+  `twitter:image`). The chosen one is stored as `iconUrl`; `sourceUrl` keeps the
+  listing link (see "Click-through & affiliate links").
+- Always auto-assign a fallback `emoji` too, so the item still renders if the
+  image ever fails to load.
+- Manual image entry exists only as a *fallback* if a scrape returns nothing.
 
-#### The hard part: scraping is a network call we don't control
+#### This commits us to a scrape service
 
-This is the first feature that wants data from an origin we don't own, and it
-bumps against the "static app, no backend" decision. A purely client-side fetch
-of an Amazon page is **blocked by CORS** — the browser can't read the page's
-HTML to find the image. So resolving the image requires one of:
+A "pick from several thumbnails" experience can't be done client-side: a browser
+fetch of an Amazon page is **blocked by CORS**, and we need *all* candidate
+images, not just one tag. That rules out the manual options and most thin
+metadata APIs (which typically return a single `og:image`). The realistic paths:
 
-| Approach | Self-hosting? | Notes |
+| Approach | Multi-thumbnail? | Notes |
 | --- | --- | --- |
-| **Paste image URL manually** | none | User copies the image address themselves. Zero infra, worst UX, always works. |
-| **Third-party metadata API** (Microlink, Iframely, LinkPreview…) | none | Works from a static app. Free tiers + rate limits. Sends the user's URL to a third party (privacy). Amazon coverage varies. |
-| **Own serverless function** (Cloudflare Worker / Vercel fn) | tiny | One endpoint that fetches + parses `og:image`. Best UX + control, but it's a (minimal) backend. |
-| **Amazon Product Advertising API** | account | Most reliable for Amazon, but needs an affiliate account + signing. Heavy for v1. |
+| **Own serverless function** (Cloudflare Worker / Vercel fn) — *recommended* | yes | Fetch the page, extract all candidate images, return the list. Full control over candidates, caching, and affiliate rewriting. It's a small backend, but a single stateless endpoint. |
+| **Rich scrape API** (Microlink "prerender", Iframely, ScrapingBee…) | partial | Some return multiple images; coverage/quotas vary. Sends the user's URL to a third party. Possible per-call cost. |
+| **Amazon Product Advertising API** | yes (clean) | Most reliable for Amazon specifically (real gallery + price), but requires an Associates account + request signing — natural once affiliate is live. |
 
-Recommended staging: ship **manual + paste-image-URL** with no infra, and add a
-**metadata API** (or a one-function Worker) as an enhancement when wanted. Note:
-this is the same "tiny serverless function" door the sharing backend opens — if
-we stand one up for short links, it can host the scrape endpoint too.
+Recommendation: a **single Cloudflare Worker** (`/api/preview?url=`) that returns
+`{ title, images[] }`. This is the same serverless door the short-link backend
+opens — one tiny service can host link previews, short links, and (later)
+affiliate rewriting together. Cache responses (by URL) to stay within limits.
 
 **Display vs. scrape — a key distinction:** showing a remote image via
 `<img src="…">` works cross-origin with no CORS. Only *reading* a page or image
 pixels needs CORS. So once we have an `iconUrl`, every client (including someone
 who imported a shared build) can display it; the CORS problem is confined to the
 one-time scrape at import.
+
+### Click-through & affiliate links
+
+If an item has a `sourceUrl`, it's **clickable in the loadout** — clicking opens
+the store page in a new tab. This is both a convenience (jump to the product)
+and the **future revenue hook**: those outbound links can carry affiliate tags
+(Amazon Associates, etc.).
+
+Design rules to keep that door open cleanly:
+
+- **Store the *clean* product URL**, not a pre-tagged one. Apply the affiliate
+  tag at *click time* from a single app-level config (e.g. append Amazon's
+  `?tag=` / canonicalize to the product ASIN). That way the tag can change
+  globally, isn't baked into saved or shared data, and never embeds one user's
+  tag into another user's build.
+- **Whose tag on a shared build?** The viewer's app applies the **app owner's**
+  global tag at click time — not the original sharer's. Decided here so it's
+  unambiguous; revisit if creators ever get their own tags.
+- **Affiliate rewriting lives in the same Worker** as link previews / short
+  links — a natural single place to canonicalize + tag outbound URLs.
+- Mind program terms (Amazon Associates has rules about where affiliate links
+  may appear and disclosure); worth a compliance pass before monetizing.
 
 ### Implications for the save / share system
 
@@ -163,6 +185,14 @@ image *bytes*.**
   display it via `<img>` cross-origin — fine. Caveat: remote URLs **rot**
   (Amazon changes/removes images), so a shared build's images aren't guaranteed
   forever; the emoji fallback is the durable layer.
+- **`sourceUrl` should travel in shares — reconsider lite dropping it.**
+  Click-through is now a feature *and* the affiliate revenue path, so recipients
+  of a shared build clicking items is exactly when monetization happens. Since
+  we store the *clean* URL (tag applied at click time), there's no personal-tag
+  leak. Proposed: **keep `sourceUrl` in the payload even for lite**, and drop
+  only `iconUrl`/`notes` for size. This makes lite ≈ "structure + names + emoji
+  **+ clickable store links**, minus heavy images and private notes." It grows
+  the code modestly (~80–150 chars/URL, compresses well); revisit if size bites.
 - **localStorage caching is optional and local-only.** If we cache the actual
   image bytes (data URL) for offline/robustness, keep it in localStorage **and
   out of the share payload**, and mind the ~5MB localStorage quota — dozens of
@@ -238,9 +268,15 @@ When pretty short links (`/build/darrells-edc`) and accounts are wanted:
 - **Item catalog browser** — manage items independent of placement.
 - **Item catalog dedupe on import** — imports currently insert fresh item
   copies every time; dedupe by identity (name+brand) later.
-- **URL item import** — decide the scrape mechanism (manual paste → metadata
-  API → own Worker); Amazon first. See "Adding items". Pick this when the add-
-  item UI is built; it shares the serverless-function door with short links.
+- **URL item import** — build the Reddit-style link-preview flow: a Cloudflare
+  Worker `/api/preview?url=` returning `{ title, images[] }`, Amazon first. See
+  "Adding items". Shares the serverless door with short links + affiliate.
+- **Affiliate rewriting** — append the app-level affiliate tag to outbound
+  `sourceUrl` clicks at click time (clean URLs stored). Compliance pass before
+  monetizing. See "Click-through & affiliate links".
+- **Lite payload redefinition** — currently `share.ts` lite drops `sourceUrl`;
+  per the click-through decision, lite should *keep* `sourceUrl` and drop only
+  `iconUrl`/`notes`. Update `toWire`/`fromWire` when implementing.
 - **Dot ↔ paperdoll alignment** — dot positions are hand-placed and slightly
   off the silhouette in the wireframe; needs tuning when ported to React with
   normalized (0..1) zone coordinates.
