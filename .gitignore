@@ -31,3 +31,10 @@ logs
 # misc
 *.tsbuildinfo
 coverage
+
+# tsc -b emitted artifacts for config files
+vite.config.js
+vite.config.d.ts
+
+# local claude settings
+.claude/settings.local.json
